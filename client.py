@@ -2,23 +2,28 @@ import asyncio
 import discord
 import importlib.util
 import json
-from typing import Dict, List
 
-from BaseModule import BaseModule
-
-settings: Dict
-with open("config.json") as f:
-    settings = json.load(f)
+config = open("config.json", "r+")
+settings = json.load(config)
 
 client = discord.Client()
 
-modules: List[BaseModule] = []
+modules = []
+
+
+def save_state():
+    config.seek(0)
+    json.dump(settings, config, indent=2)
+    config.truncate()
+
 
 for m in settings["modules"]:
     spec = importlib.util.find_spec("modules." + m["name"])
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    modules.append(module.Module(client, m["args"]))
+    if "state" not in m:
+        m["state"] = {}
+    modules.append(module.Module(client, m, save_state))
 
 
 @client.event
