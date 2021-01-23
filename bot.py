@@ -1,13 +1,13 @@
-import asyncio
 import discord
 import importlib.util
 import json
+from collections import defaultdict
+from discord.ext import commands
 
 config = open("config.json", "r+")
 settings = json.load(config)
 
-client = discord.Client()
-
+bot = commands.Bot(command_prefix=">")
 modules = []
 
 
@@ -23,12 +23,9 @@ for m in settings["modules"]:
     spec.loader.exec_module(module)
     if "state" not in m:
         m["state"] = {}
-    modules.append(module.Module(client, m, save_state))
+    modules.append(module.Module(bot, m, save_state))
+
+print(discord.utils.oauth_url(settings["client_id"]))
 
 
-@client.event
-async def on_ready():
-    await asyncio.wait([m.on_ready() for m in modules])
-
-
-client.run(settings["token"])
+bot.run(settings["token"])

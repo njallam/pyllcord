@@ -8,7 +8,7 @@ def my_message():
 
 class Module(BaseModule):
     async def on_ready(self):
-        channel = self.client.get_channel(self.args["channel_id"])
+        channel = self.bot.get_channel(self.args["channel_id"])
         if "message_id" in self.state:
             message = channel.get_partial_message(self.state["message_id"])
             if message:
